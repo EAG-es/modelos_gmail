@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package innui.modelos_emails;
+package innui.modelos_gmails;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -35,9 +35,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import org.apache.commons.codec.binary.Base64;
 
 /**
@@ -99,7 +105,7 @@ public class modelos_gmails extends modelos {
                     = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(inputStream));
             URL directorio_tokens_url = modelos_gmails.class.getResource(k_directorio_tokens);            
             if (directorio_tokens_url == null) {
-                ok.setTxt(tr.in(in, "Directorio para los tokesn de identificación no encontrado: ") + k_ruta_credenciales_json);
+                ok.setTxt(tr.in(in, "Directorio para los tokens de identificación no encontrado: ") + k_ruta_credenciales_json);
                 return null;
             }
             File directorio_tokens = new File(directorio_tokens_url.toURI());// new File(k_directorio_tokens);
@@ -115,7 +121,33 @@ public class modelos_gmails extends modelos {
                     .build();
             LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(k_LocalServerReceiver_port).build();
             Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+            credential.setExpiresInSeconds(null);
             return credential;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    /**
+     * Renueva y obtiene la autorización de las credenciales de un archivo json definido en k_ruta_credenciales_json
+     * @param credential Credenciales que renovar.
+     * @param netHttpTransport The network HTTP Transport.
+     * @param ok Comunicar resultados
+     * @param extras_array Opción de añadir parámetros en el futuro.
+     * @return Un objeto authorized Credential object.
+     * @throws Exception si no encuentra el archivo de credenciales k_ruta_credenciales_json.
+     */
+    private static Credential renovar_credenciales_autorizadas(Credential credential
+    , final NetHttpTransport netHttpTransport
+    , oks ok, Object ... extras_array)  throws Exception {
+        try {
+            ok.es = credential.refreshToken();
+            if (ok.es == false) {
+                ok.iniciar();
+                return modelos_gmails.obtener_credenciales_autorizadas(netHttpTransport, ok);
+            } else {
+                credential.setExpiresInSeconds(null);
+                return credential;
+            }
         } catch (Exception e) {
             throw e;
         }
@@ -151,6 +183,7 @@ public class modelos_gmails extends modelos {
      * @param destinatario email del destinatario
      * @param asunto Asunto del email
      * @param cuerpo Cuerpo del email
+     * @param files_adjuntos_array Array con los archivos que adjuntar; null si no hay adjuntos.
      * @param ok Comunicar resultados
      * @param extras_array Opción de añadir parámetros en el futuro.
      * @return El mensaje, o null.
@@ -160,6 +193,7 @@ public class modelos_gmails extends modelos {
     , String destinatario
     , String asunto
     , String cuerpo
+    , File [] files_adjuntos_array
     , oks ok, Object ... extras_array)  throws Exception {
         try {
             if (ok.es == false) { return null; }
@@ -171,6 +205,8 @@ public class modelos_gmails extends modelos {
             if (_credential == null) {
                 _credential = modelos_gmails.obtener_credenciales_autorizadas(k_http_transport, ok);
                 if (ok.es == false) { return null; }
+            } else {
+                _credential = modelos_gmails.renovar_credenciales_autorizadas(_credential, k_http_transport, ok);
             }
             JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
             Gmail gmail = new Gmail.Builder(k_http_transport, jsonFactory, _credential)
@@ -186,7 +222,25 @@ public class modelos_gmails extends modelos {
             mimeMessage.addRecipient(javax.mail.Message.RecipientType.TO,
                 new InternetAddress(destinatario));
             mimeMessage.setSubject(asunto);
-            mimeMessage.setText(cuerpo);
+            if (files_adjuntos_array != null) {
+                Multipart multipart = new MimeMultipart();
+                MimeBodyPart mimeBodyPart;
+                // Primera parte
+                mimeBodyPart = new MimeBodyPart();
+                mimeBodyPart.setText(cuerpo);
+                multipart.addBodyPart(mimeBodyPart);
+                for (File file: files_adjuntos_array) {
+                    // Siguientes partes
+                    mimeBodyPart = new MimeBodyPart();
+                    DataSource source = new FileDataSource(file);
+                    mimeBodyPart.setDataHandler(new DataHandler(source));
+                    mimeBodyPart.setFileName(file.getName());
+                    multipart.addBodyPart(mimeBodyPart);
+                }
+                mimeMessage.setContent(multipart);
+            } else {
+                mimeMessage.setText(cuerpo);
+            }
             // Codificar el email
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             mimeMessage.writeTo(byteArrayOutputStream);

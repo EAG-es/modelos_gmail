@@ -1,4 +1,4 @@
-package innui.modelos_emails.ejemplos;
+package innui.modelos_gmails.ejemplos;
 
 import java.util.Properties;
 import javax.mail.MessagingException;

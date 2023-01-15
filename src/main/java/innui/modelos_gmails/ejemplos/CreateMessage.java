@@ -1,4 +1,4 @@
-package innui.modelos_emails.ejemplos;
+package innui.modelos_gmails.ejemplos;
 
 import com.google.api.services.gmail.model.Message;
 import java.io.ByteArrayOutputStream;
