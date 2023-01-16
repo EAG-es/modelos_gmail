@@ -51,7 +51,7 @@ import org.apache.commons.codec.binary.Base64;
  * @author emilio
  */
 public class modelos_gmails extends modelos {
-    public static String k_in_ruta_modelos_gmails = "in/innui/modelos_emails/in";
+    public static String k_in_ruta_modelos_gmails = "in/innui/modelos_gmails/in";
     public static String k_ruta_credenciales_json = "/re/google_credentials.json";
     public static String k_directorio_tokens = "/home/nombre_usuario/carpeta_donde_se_crean_google_StoredCredential"; // Si no existen, google las creará;
     public static int k_LocalServerReceiver_port = 8888;
