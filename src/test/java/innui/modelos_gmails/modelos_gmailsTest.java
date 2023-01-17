@@ -62,7 +62,7 @@ public class modelos_gmailsTest {
     public void testEnviar_email() throws Exception {
         System.out.println("enviar_email");
         String remitente = "no.responder@gmail.com";
-        String destinatario = "eag2001@gmail.com";
+        String destinatario = "email.destino@gmail.com";
         String asunto = "Probar email";
         String cuerpo = "Cuerpo de probar email";
         File [] files_adjuntos_array = null;
