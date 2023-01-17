@@ -5,9 +5,9 @@
 package innui.modelos_gmails;
 
 
-import innui.modelos_gmails.modelos_gmails;
 import com.google.api.services.gmail.model.Draft;
 import com.google.api.services.gmail.model.Message;
+import com.google.common.io.Resources;
 import innui.modelos.errores.oks;
 import java.io.File;
 import java.net.URL;
@@ -86,9 +86,9 @@ public class modelos_gmailsTest {
 //        assertNotNull(result);
 //        assertTrue(ok.es);
         files_adjuntos_array = new File[2];
-        url = this.getClass().getResource("/re/configuraciones.properties");
+        url = Resources.getResource(this.getClass(), "/re/innui.modelos_gmails.properties");
         files_adjuntos_array[0] = new File(url.toURI());
-        url = this.getClass().getResource("/re/google_credentials.json");
+        url = Resources.getResource(this.getClass(), "/re/google_credentials.json");
         files_adjuntos_array[1] = new File(url.toURI());
         result = instance.enviar_email(remitente, destinatario, asunto, cuerpo, files_adjuntos_array, ok);
         assertNotNull(result);

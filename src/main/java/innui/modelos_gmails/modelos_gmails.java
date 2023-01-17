@@ -22,6 +22,7 @@ import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Draft;
 import com.google.api.services.gmail.model.Message;
 import innui.modelos.configuraciones.ResourceBundles;
+import innui.modelos.configuraciones.Resources;
 import innui.modelos.errores.oks;
 import innui.modelos.internacionalizacion.tr;
 import innui.modelos.modelos;
@@ -96,14 +97,14 @@ public class modelos_gmails extends modelos {
 //            gmaiScopes_list.add(GmailScopes.GMAIL_SEND);  // No se necesita
             gmaiScopes_list.add(GmailScopes.MAIL_GOOGLE_COM);
             // Load client secrets.
-            InputStream inputStream = modelos_gmails.class.getResourceAsStream(k_ruta_credenciales_json);
+            InputStream inputStream = Resources.getResourceAsStream(modelos_gmails.class, k_ruta_credenciales_json);
             if (inputStream == null) {
                 ok.setTxt(tr.in(in, "Archivo de credenciales no encontrado en la ruta: ") + k_ruta_credenciales_json);
                 return null;
             }
             GoogleClientSecrets googleClientSecrets
                     = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(inputStream));
-            URL directorio_tokens_url = modelos_gmails.class.getResource(k_directorio_tokens);            
+            URL directorio_tokens_url = Resources.getResource(modelos_gmails.class, k_directorio_tokens);            
             if (directorio_tokens_url == null) {
                 ok.setTxt(tr.in(in, "Directorio para los tokens de identificación no encontrado: ") + k_ruta_credenciales_json);
                 return null;
